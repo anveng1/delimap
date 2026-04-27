@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>지입 배송지도 (관리자)</title>
+<script src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=0tx9u02jhx"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#f5f6f8}
+#hd{background:#1a1a2e;color:#fff;padding:12px 20px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 8px rgba(0,0,0,0.3);position:relative;z-index:10}
+#hd h1{font-size:16px;font-weight:700}
+.badge{background:#03C75A;color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px}
+.admin-badge{background:#e84040;color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px}
+#stats{display:flex;gap:18px;margin-left:auto;font-size:13px;color:#aaa}
+#stats b{color:#fff}
+#map{width:100%;height:calc(100vh - 52px)}
+.legend{position:absolute;bottom:32px;left:16px;background:rgba(26,26,46,0.92);backdrop-filter:blur(4px);border-radius:10px;padding:12px 16px;z-index:100;font-size:12px;color:#ccc;line-height:2}
+.legend-title{font-weight:700;font-size:13px;color:#fff;margin-bottom:4px}
+.leg-row{display:flex;align-items:center;gap:8px}
+.leg-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0;border:2px solid rgba(255,255,255,0.2)}
+.iw{background:#fff;border-radius:12px;padding:14px 16px;min-width:220px;max-width:280px;box-shadow:0 4px 24px rgba(0,0,0,0.2);font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif}
+.iw-course{font-size:11px;font-weight:700;color:#03C75A;margin-bottom:4px}
+.iw-name{font-size:15px;font-weight:700;color:#1a1a2e;margin-bottom:4px;line-height:1.4}
+.iw-addr{font-size:11px;color:#999;margin-bottom:10px;line-height:1.5}
+.iw-div{border:none;border-top:1px solid #f0f0f0;margin:8px 0}
+.iw-row{display:flex;justify-content:space-between;align-items:center;padding:3px 0}
+.iw-label{font-size:12px;color:#aaa}
+.iw-val{font-size:13px;font-weight:700;color:#1a1a2e}
+.red{color:#e84040}.amber{color:#e67e00}.green{color:#03874a}
+.iw-tail{position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-top:10px solid #fff}
+.iw-group-badge{display:inline-block;background:#f0f4ff;color:#3355cc;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;margin-bottom:8px}
+.iw-item{padding:6px 0}
+.iw-item-name{font-size:13px;font-weight:700;color:#1a1a2e;margin-bottom:4px}
+.iw-item-row{display:flex;justify-content:space-between;align-items:center;padding:2px 0}
+</style>
+</head>
+<body>
+<div id="hd">
+  <h1>지입 배송지도</h1>
+  <span class="badge">2026년 3월</span>
+  <span class="admin-badge">관리자</span>
+  <div id="stats">
+    <span>거래처 <b>23개</b></span>
+    <span>총매출 <b>4.7천만원</b></span>
+    <span>총이익 <b>667만원</b></span>
+    <span>마진율 <b>14.1%</b></span>
+  </div>
+</div>
+<div style="position:relative">
+  <div id="map"></div>
+  <div class="legend">
+    <div class="legend-title">매출액 기준</div>
+    <div class="leg-row"><span class="leg-dot" style="background:#e84040"></span>500만원 이상</div>
+    <div class="leg-row"><span class="leg-dot" style="background:#e67e00"></span>100~500만원</div>
+    <div class="leg-row"><span class="leg-dot" style="background:#03874a"></span>100만원 미만</div>
+  </div>
+</div>
+<script>
+const COURSE="지입";
+const stores=[{"n": "스테레오스코프커피", "a": "서울 강남구 압구정로 343 갤러리아백화점 WEST 지하 1층", "lat": 37.5284458, "lng": 127.040104, "s": 2981160, "p": 340838, "mg": 0.11719573080996327, "t": 51, "pt": 58454}, {"n": "주방_신세계강남 브라우터(서초)", "a": "서울 서초구 신반포로 176 신세계백화점 B1층 브라우터 .", "lat": 37.5038952, "lng": 127.004752, "s": 2779050, "p": 247400, "mg": 0.09725033903968239, "t": 23, "pt": 120828}, {"n": "봉은사 여여카페(강남)", "a": "서울 강남구 봉은사로 531 여여카페", "lat": 37.5149197, "lng": 127.0576546, "s": 2259706, "p": 383171, "mg": 0.1755437825218095, "t": 31, "pt": 72893}, {"n": "아띠몽 코엑스메가박스점(강남)", "a": "서울 강남구 테헤란로87길 58 B1 메가박스옆", "lat": 37.5120151, "lng": 127.0575397, "s": 2153600, "p": 350111, "mg": 0.17440549073602682, "t": 32, "pt": 67300}, {"n": "스누피플레이스(강남)", "a": "서울 서초구 신반포로 176 신세계백화점 강남점 10층 스누피플레이스", "lat": 37.5038952, "lng": 127.004752, "s": 1753200, "p": 271820, "mg": 0.1578513356562137, "t": 15, "pt": 116880}, {"n": "에덴스벨리_코엑스(강남)", "a": "서울 강남구 영동대로 513 스타필드 코엑스점 B1층 P108호 없음", "lat": 37.5118239, "lng": 127.0591591, "s": 1467730, "p": 244412, "mg": 0.17320671816313515, "t": 26, "pt": 56451}, {"n": "산스 신세계강남 팝업(강남)", "a": "서울 서초구 신반포로 176 B1층 산스", "lat": 37.5038952, "lng": 127.004752, "s": 1373420, "p": 181000, "mg": 0.1431056293485136, "t": 13, "pt": 105647}, {"n": "온앤오프(서초)", "a": "서울특별시 서초구 효령로321, 1층 (서초동,덕원빌딩)(메가스터디 건물)", "lat": 37.4861335, "lng": 127.0191855, "s": 1206280, "p": 182453, "mg": 0.15291066040898424, "t": 16, "pt": 75392}, {"n": "팝퍼블_잠실점(송파)", "a": "서울 송파구 올림픽로 240 롯데백화점 2층 키네틱그라운드 내", "lat": 37.511088, "lng": 127.0982822, "s": 1021350, "p": 148572, "mg": 0.15327762302692666, "t": 18, "pt": 56741}, {"n": "*살롱드아난티_캐비네드아난티사옥(강남)", "a": "서울 강남구 논현로136길 11 없음", "lat": 37.5162328, "lng": 127.0310428, "s": 883200, "p": 139548, "mg": 0.15800271739130434, "t": 11, "pt": 80290}, {"n": "HLB사옥카페(강남)", "a": "서울 강남구 논현로 662 1층 HLB사옥카페", "lat": 37.5131798, "lng": 127.0315441, "s": 862585, "p": 115790, "mg": 0.13795198665634123, "t": 17, "pt": 50740}, {"n": "팥고당 강남구청점(강남)", "a": "서울 강남구 선릉로131길 12 1층", "lat": 37.5179193, "lng": 127.0398933, "s": 816770, "p": 93314, "mg": 0.11482454046311769, "t": 13, "pt": 62828}, {"n": "홀_신세계강남 브라우터(서초)", "a": "서울 서초구 신반포로 176 신세계백화점 B1층 브라우터 .", "lat": 37.5038952, "lng": 127.004752, "s": 751640, "p": 109520, "mg": 0.14631539571420937, "t": 20, "pt": 37582}, {"n": "마이멜로디 하모니 카페(송파)", "a": "서울 송파구 올림픽로 240 롯데월드 쇼핑몰동 지하 1층", "lat": 37.511088, "lng": 127.0982822, "s": 691200, "p": 97624, "mg": 0.14764670296430732, "t": 11, "pt": 62836}, {"n": "키커피 파미에스테이션점(서초)", "a": "서울 서초구 사평대로 205 1층 키커피컴퍼니", "lat": 37.5044921, "lng": 127.0078453, "s": 652230, "p": 93752, "mg": 0.14735783219641005, "t": 27, "pt": 24156}, {"n": "온고지신 센트럴시티점(서초)", "a": "서울 서초구 신반포로 176, 1M층 M4호 (반포동,센트럴시티)", "lat": 37.5038952, "lng": 127.004752, "s": 590920, "p": 92233, "mg": 0.16057277158774375, "t": 26, "pt": 22727}, {"n": "도노커피_버킷플레이스1(강남)", "a": "서울 서초구 서초대로74길 4 삼성생명 서초타워 27층", "lat": 37.4967406, "lng": 127.0257311, "s": 396000, "p": 70740, "mg": 0.17863636363636365, "t": 3, "pt": 132000}, {"n": "도노커피_하이퍼커넥트(강남)", "a": "서울 강남구 영동대로 517 아셈타워 20층", "lat": 37.5130502, "lng": 127.0598322, "s": 377550, "p": 67979, "mg": 0.18904270347834792, "t": 6, "pt": 62925}, {"n": "도노커피_블루버드(강남)", "a": "서울 강남구 일원로 115 삼성생명 빌딩 3층", "lat": 37.4840224, "lng": 127.0844597, "s": 237600, "p": 42444, "mg": 0.17863636363636365, "t": 4, "pt": 59400}, {"n": "하프커피_파미에(서초)", "a": "서울 서초구 사평대로 205 센트럴시티 파미에스테이션 2층 FP212호 하프커피", "lat": 37.5044921, "lng": 127.0078453, "s": 136800, "p": 23564, "mg": 0.18947453061552688, "t": 3, "pt": 45600}, {"n": "이스터서울_갤러리아백화점(강남)", "a": "서울 강남구 압구정로 343 갤러리아 명품관WEST 지하 1층", "lat": 37.5284458, "lng": 127.040104, "s": 126400, "p": 21624, "mg": 0.17107594936708861, "t": 3, "pt": 42133}, {"n": "도노커피_버킷플레이스2(강남)", "a": "서울 서초구 서초대로74길 4 삼성생명 서초타워 25층", "lat": 37.4967406, "lng": 127.0257311, "s": 96800, "p": 17292, "mg": 0.17863636363636365, "t": 2, "pt": 48400}, {"n": "", "a": "", "lat": null, "lng": null, "s": 23615191, "p": 3335201, "mg": 0.1469305459535145, "t": 371, "pt": 63652}];
+
+function gc(s){return s>=5000000?'#e84040':s>=1000000?'#e67e00':'#03874a'}
+function gs(s){return s>=5000000?20:s>=2000000?16:s>=1000000?13:10}
+function fm(n){if(n>=10000000)return(n/10000000).toFixed(1)+'천만원';if(n>=1000000)return(n/10000).toFixed(0)+'만원';return n.toLocaleString()+'원'}
+function pct(v){return(v*100).toFixed(1)+'%'}
+
+const map=new naver.maps.Map('map',{
+  center:new naver.maps.LatLng(37.5,127.0),
+  zoom:11,
+  mapTypeId:naver.maps.MapTypeId.NORMAL
+});
+let ow=null;
+
+// 좌표 그룹핑 (소수점 4자리 기준 — 같은 건물 처리)
+const groups={};
+stores.forEach(s=>{
+  if(!s.lat||!s.lng)return;
+  const key=s.lat.toFixed(4)+','+s.lng.toFixed(4);
+  if(!groups[key])groups[key]=[];
+  groups[key].push(s);
+});
+
+const bounds=new naver.maps.LatLngBounds();
+const markerList=[];
+
+Object.values(groups).forEach(grp=>{
+  const s0=grp[0];
+  const cnt=grp.length;
+  const totalS=grp.reduce((a,s)=>a+s.s,0);
+  const c=gc(totalS/cnt);
+  const r=cnt>1?16:gs(s0.s);
+
+  bounds.extend(new naver.maps.LatLng(s0.lat,s0.lng));
+
+  const markerHtml=cnt>1
+    ?`<div style="width:${r*2}px;height:${r*2}px;background:${c};border:2.5px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.35);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;transition:transform .15s" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">${cnt}</div>`
+    :`<div style="width:${r*2}px;height:${r*2}px;background:${c};border:2.5px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.35);cursor:pointer;transition:transform .15s" onmouseover="this.style.transform='scale(1.25)'" onmouseout="this.style.transform='scale(1)'"></div>`;
+
+  const mk=new naver.maps.Marker({
+    position:new naver.maps.LatLng(s0.lat,s0.lng),
+    map,
+    icon:{content:markerHtml,anchor:new naver.maps.Point(r,r)}
+  });
+  markerList.push(mk);
+
+  let iwContent='';
+  if(cnt===1){
+    const s=grp[0];
+    const cls=s.s>=5000000?'red':s.s>=1000000?'amber':'green';
+    iwContent=`<div class="iw" style="position:relative">
+      <div class="iw-course">${COURSE}</div>
+      <div class="iw-name">${s.n}</div>
+      <div class="iw-addr">${s.a}</div>
+      <hr class="iw-div">
+      <div class="iw-row"><span class="iw-label">매출</span><span class="iw-val ${cls}">${fm(s.s)}</span></div>
+      <div class="iw-row"><span class="iw-label">이익</span><span class="iw-val">${fm(s.p)}</span></div>
+      <div class="iw-row"><span class="iw-label">마진율</span><span class="iw-val">${pct(s.mg)}</span></div>
+      <div class="iw-row"><span class="iw-label">전표수</span><span class="iw-val">${s.t}건</span></div>
+      <div class="iw-row"><span class="iw-label">전표당매출</span><span class="iw-val">${fm(s.pt)}</span></div>
+      <div class="iw-tail"></div></div>`;
+  }else{
+    const items=grp.map(s=>{
+      const cls=s.s>=5000000?'red':s.s>=1000000?'amber':'green';
+      return `<div class="iw-item">
+        <div class="iw-item-name">${s.n}</div>
+        <div class="iw-item-row"><span class="iw-label">매출</span><span class="iw-val ${cls}">${fm(s.s)}</span></div>
+        <div class="iw-item-row"><span class="iw-label">이익</span><span class="iw-val">${fm(s.p)}</span></div>
+        <div class="iw-item-row"><span class="iw-label">마진율</span><span class="iw-val">${pct(s.mg)}</span></div>
+        <div class="iw-item-row"><span class="iw-label">전표수</span><span class="iw-val">${s.t}건</span></div>
+        <div class="iw-item-row"><span class="iw-label">전표당매출</span><span class="iw-val">${fm(s.pt)}</span></div>
+      </div>`;
+    }).join('<hr class="iw-div">');
+    iwContent=`<div class="iw" style="position:relative">
+      <div class="iw-course">${COURSE}</div>
+      <div class="iw-addr" style="margin-bottom:6px">${s0.a}</div>
+      <div class="iw-group-badge">총 ${cnt}개 거래처</div>
+      <hr class="iw-div">${items}<div class="iw-tail"></div></div>`;
+  }
+
+  const iw=new naver.maps.InfoWindow({content:iwContent,borderWidth:0,disableAnchor:true,backgroundColor:'transparent',pixelOffset:new naver.maps.Point(0,-12)});
+  naver.maps.Event.addListener(mk,'click',()=>{
+    if(ow)ow.close();
+    if(ow===iw){ow=null;return}
+    iw.open(map,mk);ow=iw;
+  });
+});
+
+// 모든 마커가 화면에 들어오도록 자동 조정
+if(!bounds.isEmpty()){
+  map.fitBounds(bounds,{top:70,right:40,bottom:60,left:40});
+}
+
+map.addListener('click',()=>{if(ow){ow.close();ow=null}});
+</script>
+</body>
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>F2 마포·서대문·관악·경기북서권 배송지도</title>
+<script src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=0tx9u02jhx"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif}
+#hd{background:#3355cc;color:#fff;padding:12px 20px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 6px rgba(0,0,0,0.2);position:relative;z-index:10}
+#hd h1{font-size:16px;font-weight:700}
+.cnt{background:rgba(255,255,255,0.25);font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px}
+#map{width:100%;height:calc(100vh - 50px)}
+.iw{background:#fff;border-radius:10px;padding:12px 14px;min-width:200px;max-width:260px;box-shadow:0 3px 16px rgba(0,0,0,0.18);font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;position:relative}
+.iw-course{font-size:11px;font-weight:700;color:#3355cc;margin-bottom:3px}
+.iw-name{font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:5px;line-height:1.4}
+.iw-addr{font-size:12px;color:#888;line-height:1.5}
+.iw-tail{position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-top:10px solid #fff}
+.iw-group-badge{display:inline-block;background:#f0f4ff;color:#1a1a2e;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;margin-bottom:6px}
+.iw-item{padding:5px 0;font-size:13px;font-weight:600;color:#1a1a2e;border-bottom:1px solid #f5f5f5}
+.iw-item:last-child{border-bottom:none}
+</style>
+</head>
+<body>
+<div id="hd">
+  <h1>F2 마포·서대문·관악·경기북서권 배송지도</h1>
+  <span class="cnt">64개 거래처</span>
+</div>
+<div id="map"></div>
+<script>
+const LABEL="F2 마포·서대문·관악·경기북서권";
+const COLOR="#3355cc";
+const stores=[{"n": "모센즈스위트(일산)", "a": "경기 고양시 덕양구 동헌로235번길 129-19 (대자동)", "lat": 37.7153051, "lng": 126.8750849}, {"n": "연세우유 관악대리점(관악)", "a": "서울 관악구 관천로22길 13 (신림동)", "lat": 37.4885259, "lng": 126.9231342}, {"n": "타쿠미야(마포)", "a": "서울 마포구 토정로 295 지하2층", "lat": 37.541206, "lng": 126.9422329}, {"n": "커스텀요거트(관악)", "a": "서울 관악구 은천로23길 17 커스텀요거트", "lat": 37.4875946, "lng": 126.9480967}, {"n": "나이스카페인클럽 공덕오거리점(마포)", "a": "서울 마포구 새창로 11 (도화동) 1층 전면좌측2호", "lat": 37.5424763, "lng": 126.9513438}, {"n": "나이스카페인클럽 상암DMC점(마포)", "a": "서울 마포구 월드컵북로 375 (상암동, DMC이안상암1단지) 1층 113호", "lat": 37.5775718, "lng": 126.8906892}, {"n": "프레드 커피하우스 본점", "a": "서울 마포구 월드컵북로54길 17 104호(상암동, 사보이시티디엠씨)", "lat": 37.5813386, "lng": 126.8885633}, {"n": "프레드 커피하우스 상암MBC점", "a": "서울 마포구 월드컵북로 396 제1층 제알106호(상암동 누리꿈스퀘어)", "lat": 37.5793419, "lng": 126.889819}, {"n": "테바(마포)", "a": "서울 마포구 마포대로 204 102호", "lat": 37.5520276, "lng": 126.9565447}, {"n": "카페아페쎄 신촌점(서대문)", "a": "서울 서대문구 신촌로 83 4층(창천동, 현대백화점신촌점)", "lat": 37.5560846, "lng": 126.9358309}, {"n": "라헬의부엌(마포)", "a": "서울 마포구 와우산로29길 47 1층", "lat": 37.5556488, "lng": 126.9273619}, {"n": "팥고당 스타필드 고양점(고양)", "a": "경기 고양시 덕양구 고양대로 1955 1층 (자라 여성복 매장 앞, 4번홀 출구 앞)", "lat": 37.6469771, "lng": 126.894778}, {"n": "나이스카페인클럽 공덕경의선숲길점(마포)", "a": "서울 마포구 백범로 152 201동 1층 7호, (공덕동,공덕파크자이)", "lat": 37.5451678, "lng": 126.9472413}, {"n": "비앙비앙(마포)", "a": "서울특별시 마포구 만리재옛길 32, 1층 일부(신공덕동) 없음", "lat": 37.5468745, "lng": 126.9562086}, {"n": "리또리또 이대점(서대문)", "a": "서울 서대문구 이화여대길 52-33 1층 1,2호(대현동)", "lat": 37.5594657, "lng": 126.944866}, {"n": "민트초코월드(마포)", "a": "서울특별시 마포구 성미산로 29길 32 1층", "lat": 37.5654134, "lng": 126.9221158}, {"n": "타쿠미야(마포)_앵커버터", "a": "서울 마포구 토정로 295 지하2층", "lat": 37.541206, "lng": 126.9422329}, {"n": "우니꼬 케이크(동작)", "a": "서울 동작구 사당로22길 15 1층 105호", "lat": 37.482786, "lng": 126.9769627}, {"n": "팃빗(관악)", "a": "서울특별시 관악구 14가길 6, 2층 201-203호 (봉천동)", "lat": 37.47826729616456, "lng": 126.95592935441516}, {"n": "카페쉐바(동작구)", "a": "서울 동작구 흑석한강로 49 새론교회", "lat": 37.5029015, "lng": 126.9633002}, {"n": "나이스카페인클럽 상암점(마포)", "a": "서울 마포구 월드컵북로 402 1층 155호", "lat": 37.5802099, "lng": 126.8889677}, {"n": "파나델리베이커리(마포)", "a": "서울특별시 마포구 굴레방로 13 (아현동) 1층 105호", "lat": 37.5552735, "lng": 126.9556116}, {"n": "칼라스커피(마포)", "a": "서울 마포구 월드컵북로16길 16 1층 일부(성산동)", "lat": 37.5628291, "lng": 126.9153254}, {"n": "프로메사 나우 행신(고양)", "a": "경기 고양시 일산서구 주엽로 80 C229호", "lat": 37.6660671, "lng": 126.7564181}, {"n": "프로메사 나우 지축(고양)", "a": "경기도 고양시 덕양구 지축4로 1 (지축동) 101호", "lat": 37.6506356, "lng": 126.9268691}, {"n": "뚜띠쿠치나 공덕점(마포)", "a": "서울 마포구 마포대로12길 58 주식회사 필경 1층(공덕동)", "lat": 37.5462971, "lng": 126.9543326}, {"n": "뚜띠쿠치나 상암점(마포)", "a": "서울 마포구 월드컵북로 400 1층 A111호(상암동, 문화콘텐츠센터)", "lat": 37.5803815, "lng": 126.8899121}, {"n": "컾핖짚(서대문구)", "a": "서울 서대문구 연세로9길 16 1층 (창천동)", "lat": 37.5586401, "lng": 126.9358905}, {"n": "뚜띠쿠치나 행신(고양)", "a": "경기도 고양시 덕양구 서정마을2로7번길 27-7 (행신동) 1층", "lat": 37.6220538, "lng": 126.8466655}, {"n": "커피나인 정부과천청사역점(과천)", "a": "경기 과천시 별양상가3로 14 1층 103호", "lat": 37.4257851, "lng": 126.9912685}, {"n": "온고지신 본점(관악)", "a": "서울 관악구 관악로14길 101 2층 (2층으로 올라와주세요)", "lat": 37.4779248, "lng": 126.9579651}, {"n": "내면의 발견(마포)", "a": "서울 마포구 서교동 460-2 1층", "lat": 37.5561029, "lng": 126.9160651}, {"n": "연세우유 모래내보급소(서대문)", "a": "서울 서대문구 거북골로 211 (북가좌, 1층)", "lat": 37.5790533, "lng": 126.9077486}, {"n": "파더스베이글 불광역점(은평구)", "a": "서울 은평구 통일로 767 401동 2층 209호(대조동, 베르디움STAY1)", "lat": 37.6133826, "lng": 126.9269422}, {"n": "홍대카페(마포)", "a": "서울 마포구 어울마당로 68 (서교동, 18)  8층", "lat": 37.5511077, "lng": 126.9214935}, {"n": "마치구커피(마포)", "a": "서울 마포구 성미산로10길 14 1층 코너호(성산동)", "lat": 37.5587309, "lng": 126.9151319}, {"n": "베지터블(마포)", "a": "서울 마포구 독막로 258 (대흥동) 단독주택 1층", "lat": 37.546063, "lng": 126.9421306}, {"n": "르네드(관악)", "a": "서울 관악구 인헌길 61, 1층(봉천동) 없음", "lat": 37.472791, "lng": 126.9668257}, {"n": "그래니플랫(마포)", "a": "서울특별시 마포구 동교로23길 36 (동교동) 1층", "lat": 37.5575795, "lng": 126.9198897}, {"n": "사브르(서대문)", "a": "서울 서대문구 신촌로 83 현대백화점신촌점 지하1층 .", "lat": 37.5560846, "lng": 126.9358309}, {"n": "본연(마포)", "a": "서울 마포구 동교로 71-1 (망원동) 1층", "lat": 37.5539139, "lng": 126.910135}, {"n": "신촌숲아이파크APT(마포_아싸)", "a": "서울 마포구 광성로 17 신촌숲아이파크 B1 커뮤니티센터", "lat": 37.551211, "lng": 126.9338094}, {"n": "듀공(서대문)", "a": "서울 서대문구 이화여대5길 9 1층 101호(대현동, 파크제이드 이화)", "lat": 37.5582594, "lng": 126.9451344}, {"n": "흑석자이아파트(동작구)", "a": "서울 동작구 서달로 90 (흑석동, 흑석자이아파트)", "lat": 37.5013961, "lng": 126.9622793}, {"n": "푸디플(마포)", "a": "서울 마포구 신촌로2안길 30 1층(동교동)", "lat": 37.5570317, "lng": 126.9285622}, {"n": "카레시_합정(마포)", "a": "서울 마포구 독막로9길 31 1층", "lat": 37.5496949, "lng": 126.9201639}, {"n": "피터팬식품(1층) (서대문)", "a": "서울 서대문구 증가로 10 1층", "lat": 37.5693942, "lng": 126.931752}, {"n": "구떼(서대문)", "a": "서울특별시 서대문구 명지대2길 13, 1층 (홍은동)", "lat": 37.581915, "lng": 126.9250711}, {"n": "주식회사 기성피제이에스(김포)", "a": "경기 김포시 김포대로 665 (풍무동)", "lat": 37.6107484, "lng": 126.7364}, {"n": "카페 풍무(김포)", "a": "경기 김포시 서로3로 283 1층건물", "lat": 37.6039029, "lng": 126.7132621}, {"n": "피터팬식품(2층) (서대문)", "a": "서울 서대문구 증가로 10 2층", "lat": 37.5693942, "lng": 126.931752}, {"n": "햇살이머무는뜨락(은평)", "a": "서울 은평구 통일로 1034 제판매시설동 1층 133호", "lat": 37.6350853, "lng": 126.9180011}, {"n": "투고그린 불광호반베르디움점(은평)", "a": "서울 은평구 통일로 767 1층 109호(대조동, 베르디움STAY1)", "lat": 37.6133826, "lng": 126.9269422}, {"n": "청송마을중흥에스클래스APT(김포_아싸)", "a": "경기 김포시 김포한강2로 362 지하1층", "lat": 37.6511338, "lng": 126.6690282}, {"n": "썬마이야르(마포)", "a": "서울 마포구 대흥로 82 1층(대흥동)", "lat": 37.5473048, "lng": 126.9416118}, {"n": "나이스카페인클럽 일산교육장/본사사무실(고양)", "a": "경기 고양시 덕양구 무원로6번길 36 남정씨티프라자 703호", "lat": 37.6140539, "lng": 126.8337511}, {"n": "뚜띠쿠치나 응암점(은평)", "a": "서울 은평구 증산로 465 1층(신사동)", "lat": 37.5977535, "lng": 126.9151019}, {"n": "프레드 커피하우스 마두역점(고양)", "a": "경기 고양시 일산동구 중앙로 1195 102호(장항동, 로스텔)", "lat": 37.6532677, "lng": 126.7765142}, {"n": "런드리고아파트(마포)", "a": "서울 마포구 독막로19길 32 2층", "lat": 37.5489744, "lng": 126.9244826}, {"n": "핑크벌스데이(지축)", "a": "경기 고양시 덕양구 안진4길 13 1층 107호", "lat": 37.6475766, "lng": 126.9140491}, {"n": "카페국빛(마포)", "a": "서울 마포구 신수로 35 1층(현석동)", "lat": 37.5448112, "lng": 126.9340669}, {"n": "레커레커(서대문)", "a": "서울 서대문구 불광천길 278 1층(북가좌동)", "lat": 37.5864063, "lng": 126.9133912}, {"n": "씨스터브레드(서대문)", "a": "서울 서대문구 성산로 329 1층(연희동)", "lat": 37.5663391, "lng": 126.9269684}, {"n": "아방베이커리 비상교육점(과천)", "a": "경기 과천시 과천대로2길 54 1층(갈현동, 비상교육사내옥)", "lat": 37.4069356, "lng": 126.9842958}];
+
+const map=new naver.maps.Map('map',{
+  center:new naver.maps.LatLng(37.5,126.97),
+  zoom:11,
+  mapTypeId:naver.maps.MapTypeId.NORMAL
+});
+let ow=null;
+
+const groups={};
+stores.forEach(s=>{
+  if(!s.lat||!s.lng)return;
+  const key=s.lat.toFixed(4)+','+s.lng.toFixed(4);
+  if(!groups[key])groups[key]=[];
+  groups[key].push(s);
+});
+
+const bounds=new naver.maps.LatLngBounds();
+
+Object.values(groups).forEach(grp=>{
+  const s0=grp[0];
+  const cnt=grp.length;
+  bounds.extend(new naver.maps.LatLng(s0.lat,s0.lng));
+
+  const markerHtml=cnt>1
+    ?`<div style="width:32px;height:32px;background:${COLOR};border:2.5px solid #fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.28);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;transition:transform .15s" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">${cnt}</div>`
+    :`<div style="width:22px;height:22px;background:${COLOR};border:2.5px solid #fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.28);cursor:pointer;transition:transform .15s" onmouseover="this.style.transform='scale(1.25)'" onmouseout="this.style.transform='scale(1)'"></div>`;
+
+  const mk=new naver.maps.Marker({
+    position:new naver.maps.LatLng(s0.lat,s0.lng),
+    map,
+    icon:{content:markerHtml,anchor:new naver.maps.Point(cnt>1?16:11,cnt>1?16:11)}
+  });
+
+  let iwContent='';
+  if(cnt===1){
+    iwContent=`<div class="iw"><div class="iw-course">${LABEL}</div><div class="iw-name">${s0.n}</div><div class="iw-addr">${s0.a}</div><div class="iw-tail"></div></div>`;
+  }else{
+    const items=grp.map(s=>`<div class="iw-item">${s.n}</div>`).join('');
+    iwContent=`<div class="iw"><div class="iw-course">${LABEL}</div><div class="iw-addr" style="margin-bottom:6px">${s0.a}</div><div class="iw-group-badge">총 ${cnt}개 거래처</div><div style="margin-top:4px">${items}</div><div class="iw-tail"></div></div>`;
+  }
+
+  const iw=new naver.maps.InfoWindow({content:iwContent,borderWidth:0,disableAnchor:true,backgroundColor:'transparent',pixelOffset:new naver.maps.Point(0,-12)});
+  naver.maps.Event.addListener(mk,'click',()=>{
+    if(ow)ow.close();
+    if(ow===iw){ow=null;return}
+    iw.open(map,mk);ow=iw;
+  });
+});
+
+if(!bounds.isEmpty()){
+  map.fitBounds(bounds,{top:60,right:40,bottom:40,left:40});
+}
+map.addListener('click',()=>{if(ow){ow.close();ow=null}});
+</script>
+</body>
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>F1 영등포·구로·금천·강서권 배송지도</title>
+<script src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=0tx9u02jhx"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif}
+#hd{background:#e84040;color:#fff;padding:12px 20px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 6px rgba(0,0,0,0.2);position:relative;z-index:10}
+#hd h1{font-size:16px;font-weight:700}
+.cnt{background:rgba(255,255,255,0.25);font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px}
+#map{width:100%;height:calc(100vh - 50px)}
+.iw{background:#fff;border-radius:10px;padding:12px 14px;min-width:200px;max-width:260px;box-shadow:0 3px 16px rgba(0,0,0,0.18);font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;position:relative}
+.iw-course{font-size:11px;font-weight:700;color:#e84040;margin-bottom:3px}
+.iw-name{font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:5px;line-height:1.4}
+.iw-addr{font-size:12px;color:#888;line-height:1.5}
+.iw-tail{position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-top:10px solid #fff}
+.iw-group-badge{display:inline-block;background:#f0f4ff;color:#1a1a2e;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;margin-bottom:6px}
+.iw-item{padding:5px 0;font-size:13px;font-weight:600;color:#1a1a2e;border-bottom:1px solid #f5f5f5}
+.iw-item:last-child{border-bottom:none}
+</style>
+</head>
+<body>
+<div id="hd">
+  <h1>F1 영등포·구로·금천·강서권 배송지도</h1>
+  <span class="cnt">79개 거래처</span>
+</div>
+<div id="map"></div>
+<script>
+const LABEL="F1 영등포·구로·금천·강서권";
+const COLOR="#e84040";
+const stores=[{"n": "프레드커피하우스 송도센트로드점(송도)", "a": "인천 연수구 인천타워대로 323 상가동 1층 디 122호(송도동, 송도 센트로드)", "lat": 37.3992142, "lng": 126.6301759}, {"n": "프레드 커피하우스 여의도한강공원점(영등포)", "a": "서울 영등포구 은행로 60-1 1층 107호(여의도동)", "lat": 37.5301952, "lng": 126.9252558}, {"n": "나이스카페인클럽 서여의도어프로치점(영등포)", "a": "서울 영등포구 국회대로74길 20 1층 103-2호", "lat": 37.5296087, "lng": 126.9215695}, {"n": "나이스카페인클럽 인천국세청점(인천)", "a": "인천 남동구 인주대로623번길 31 1층 103호", "lat": 37.4513387, "lng": 126.7062719}, {"n": "나이스카페인클럽 가산대륭5차점(금천)", "a": "서울 금천구 디지털로9길 68 1층 119호", "lat": 37.4810217, "lng": 126.8863307}, {"n": "나이스카페인클럽 가산역점(금천)", "a": "서울 금천구 가산디지털1로 181 1층 112호", "lat": 37.481425, "lng": 126.8803936}, {"n": "나이스카페인클럽 구로디지털 광장점(구로)", "a": "서울 구로구 디지털로34길 55 1층 126호", "lat": 37.4842856, "lng": 126.8992821}, {"n": "나이스카페인클럽 가산먹거리촌점(금천)", "a": "서울 금천구 가산디지털2로 136 1층 104호", "lat": 37.4801229, "lng": 126.8799403}, {"n": "나이스카페인클럽 구로코오롱타워점(구로)", "a": "서울 구로구 디지털로30길 31 1층101호", "lat": 37.4828775, "lng": 126.8964891}, {"n": "나이스카페인클럽 당산생각공장점(영등포)", "a": "서울 영등포구 영등포로 150 B동 113호 (당산동1가, 생각공장당산)", "lat": 37.5205468, "lng": 126.8975415}, {"n": "비바디앙(강서)", "a": "서울 강서구 강서로 391 1층", "lat": 37.5605449, "lng": 126.8384276}, {"n": "코치커피샵 롯데백화점 인천점(인천)", "a": "인천 미추홀구 연남로 35 2층", "lat": 37.4424853, "lng": 126.7013784}, {"n": "온고지신 디큐브오피스점(구로)", "a": "서울특별시 구로구 경인로 662 (신도림동, 디큐브시티) 타워동 1층", "lat": 37.5081311, "lng": 126.8883838}, {"n": "베이커리_인크커피 가산점(금천)", "a": "서울 금천구 가산디지털2로 127-20 B03호,104호,201호(가산동)", "lat": 37.4793569, "lng": 126.8780734}, {"n": "카페_인크커피 가산점(금천)", "a": "서울 금천구 가산디지털2로 127-20 지상1층 101, 103호 지상2층 204호(가산동)", "lat": 37.4793569, "lng": 126.8780734}, {"n": "레프트커피(강서)", "a": "서울 강서구 강서로50길 46 1층 (내발산동)", "lat": 37.5550033, "lng": 126.8398989}, {"n": "곤트란쉐리에(여의도)", "a": "서울 영등포구 국제금융로 106 1층 101호(여의도동,행진빌딩)", "lat": 37.5190524, "lng": 126.9333119}, {"n": "보사노바 신정점", "a": "서울 양천구 중앙로45길 8-32 (신정동)", "lat": 37.5209568, "lng": 126.8520216}, {"n": "타르데마 베이커리 방화본점(강서)", "a": "서울 강서구 양천로26길 65 1층", "lat": 37.5723212, "lng": 126.8200803}, {"n": "테디스오븐 여의도점(영등포)", "a": "서울 영등포구 여의대로 70 1층 102호(여의도동)", "lat": 37.5248417, "lng": 126.9241972}, {"n": "떼르드카페(목동)", "a": "서울특별시 양천구 목동동로 257 (목동, 현대하이페리온) 7층", "lat": 37.5269241, "lng": 126.8744941}, {"n": "나이스카페인클럽 구로중앙유통단지점(구로)", "a": "서울 구로구 경인로53길 15 C동지하1층 19-03호", "lat": 37.5009708, "lng": 126.8746491}, {"n": "나이스카페인클럽 선유도점(영등포)", "a": "서울 영등포구 양평로19길 8 1층", "lat": 37.5366239, "lng": 126.8946466}, {"n": "나이스카페인클럽 구로디지털2호점(구로)", "a": "서울 구로구 디지털로33길 48 제1층 105호", "lat": 37.4872609, "lng": 126.8945149}, {"n": "아마렐로 에스프레소바(구로)", "a": "서울 구로구 가마산로21길 9 1층 102호 아마렐로 에스프레소바", "lat": 37.4942831, "lng": 126.8856139}, {"n": "상동생식빵(부천)", "a": "경기 부천시 원미구 조마루로97번길 34-4 1층(상동)", "lat": 37.5016616, "lng": 126.7550496}, {"n": "트립플러스(영등포)", "a": "서울 영등포구 영등포로 150 지하 L148호", "lat": 37.5205468, "lng": 126.8975415}, {"n": "르떼베(강서)", "a": "서울 강서구 양천로47길 40 지식산업센터 놀라움마곡 1층 101호, 카페 RTV", "lat": 37.5722375, "lng": 126.8377823}, {"n": "화이트리에 송도점(인천)", "a": "인천 연수구 신송로 157-15 104호(송도동, 제이큐브)", "lat": 37.3965445, "lng": 126.6482356}, {"n": "트래버틴 송도 현대프리미엄 아울렛(송도)", "a": "인천 연수구 송도국제대로 123 현대프리미엄아울렛 송도점 지하 1층 트래버틴", "lat": 37.3816291, "lng": 126.657917}, {"n": "나이스카페인클럽 마곡나루점(강서)", "a": "서울 강서구 마곡서로 158 1층 110호", "lat": 37.5680891, "lng": 126.8254241}, {"n": "그린매니저 목동점(양천)", "a": "서울 양천구 목동서로 155 목동동양파라곤 지하1층 38호", "lat": 37.5299683, "lng": 126.8752424}, {"n": "보사노바 문래점", "a": "서울 영등포구 영등포로20길 22-4 (문래동3가)", "lat": 37.519962, "lng": 126.8920164}, {"n": "핀즈(영등포)", "a": "서울특별시 영등포구 양평로25길 8 (양평동5가) 105호~107호", "lat": 37.5389881, "lng": 126.8908777}, {"n": "카페마일로 신길점(영등포)", "a": "서울 영등포구 신풍로 77 B-상가동 110-3호(신길동, 래미안에스티움)", "lat": 37.5010387, "lng": 126.9137135}, {"n": "모닝캄커피랩 당산점(영등포)", "a": "서울 영등포구 당산로35길 1, 1층 (당산동4가,(주)대경하이켐)", "lat": 37.5286867, "lng": 126.8973257}, {"n": "나이스카페인클럽 양평비즈타워점(영등포)", "a": "서울 영등포구 영등포로 33 105호", "lat": 37.5232989, "lng": 126.8852375}, {"n": "커피나인 여의도점(영등포)", "a": "서울 영등포구 은행로 60-1, 110호(여의도동) .", "lat": 37.5301952, "lng": 126.9252558}, {"n": "삼호상사(시흥)", "a": "경기 시흥시 수인로3077번길 26 나동 1층(안현동)", "lat": 37.4283631, "lng": 126.810717}, {"n": "나이스카페인클럽 문래점(영등포)", "a": "서울 영등포구 선유로9길 10 26호 (문래동6가, 문래SKV1center)", "lat": 37.5178673, "lng": 126.8871533}, {"n": "아로케(금천)", "a": "서울 금천구 디지털로 121 1층 105호(가산동, 에이스가산타워)", "lat": 37.4761399, "lng": 126.8800987}, {"n": "테그42철산점(광명)", "a": "경기 광명시 철산로 32 1층(철산동)", "lat": 37.4762509, "lng": 126.869814}, {"n": "요앤스(영등포)", "a": "서울 영등포구 선유동2로 67 1층", "lat": 37.5347199, "lng": 126.8979207}, {"n": "탑티어커피_부천시청점", "a": "경기 부천시 원미구 길주로 234 힐스테이트 중동 제203동 상가1층 1085호", "lat": 37.5032065, "lng": 126.7681591}, {"n": "아방베이커리 퍼블릭가산점(금천)", "a": "서울 금천구 디지털로 178 A동 1층 M-101호", "lat": 37.4766286, "lng": 126.8871293}, {"n": "롯데캐슬골드파크1차(금천_아싸)", "a": "서울 금천구 벚꽃로 40 커뮤니티카페", "lat": 37.4599082, "lng": 126.8939351}, {"n": "도노커피_한라원앤원(금천)", "a": "서울 금천구 가산디지털2로 101 1층 113호", "lat": 37.4769354, "lng": 126.8795231}, {"n": "cj텔레닉스사내카페(구로)", "a": "서울 구로구 디지털로 288 11층 cj텔레닉스사내카페", "lat": 37.4835696, "lng": 126.8955028}, {"n": "더스윗데이즈(영등포)", "a": "서울특별시 영등포구 영신로 247 (당산동5가, 당산센트럴아이파크) A동 1층 102호", "lat": 37.5299256, "lng": 126.903307}, {"n": "화이트리에 목동점(양천)", "a": "서울 양천구 목동동로 387 광장빌딩2차 1층", "lat": 37.5356427, "lng": 126.8798342}, {"n": "더티프라이 신도림점(구로)", "a": "서울 구로구 새말로 97 지하 1층", "lat": 37.5070143, "lng": 126.8902633}, {"n": "코끼리베이글 영등포점(영등포)", "a": "서울 영등포구 선유로 176 1층 60호 72,73 (양평동3가)", "lat": 37.5286021, "lng": 126.8932746}, {"n": "케이크의계절(강서)", "a": "서울 강서구 공항대로 222 4층 405호(마곡동, 발산W타워)", "lat": 37.5586687, "lng": 126.8321734}, {"n": "트립플러스 양천향교역점(강서)", "a": "서울 강서구 마곡중앙8로7길 57 1층 105호 일부(마곡동, 마곡 아이파크 디어반)", "lat": 37.5661927, "lng": 126.8392747}, {"n": "하프커피_시흥", "a": "경기 시흥시 서해안로 699 파미에스테이션 1층 하프커피", "lat": 37.3796756, "lng": 126.7369853}, {"n": "디디푸드랩(구로)", "a": "서울 구로구 디지털로31길 20 11층 1105호(구로동,에이스테크노타워5차)", "lat": 37.4854994, "lng": 126.8943518}, {"n": "아프로푸드 가산공장(금천)", "a": "서울특별시 금천구 가산디지털2로 34 5층 501~522호(가산동)", "lat": 37.4716606, "lng": 126.8835855}, {"n": "화이트리에 인천루원시티점(인천)", "a": "인천 서구 가정로 437 302동 B2층 B223호", "lat": 37.523467, "lng": 126.6712038}, {"n": "포노(PONO)(강서)", "a": "서울 강서구 화곡로55길 35 101호(화곡동,1층)", "lat": 37.5529655, "lng": 126.8479723}, {"n": "미노 파스타 목동 염창역점", "a": "서울 양천구 목동중앙본로 36 10호(목동, 목동프라자)", "lat": 37.5395782, "lng": 126.8693415}, {"n": "핑크벌스데이(금천)", "a": "서울 금천구 시흥대로73길 67 1층 102호", "lat": 37.4559426, "lng": 126.8957474}, {"n": "화이트리에 부천점(부천)", "a": "경기 부천시 원미구 소향로 131 1층 105호 (중동, 일신빌딩)", "lat": 37.5024289, "lng": 126.7623512}, {"n": "카페인잇[가산현대아울렛](금천)", "a": "서울특별시 금천구 디지털로10길 9 (가산동) 7층", "lat": 37.4776093, "lng": 126.8891538}, {"n": "뚠뚠샌드위치 가좌점(인천)", "a": "인천 서구 건지로348번길 23-1 1층 일부호(가좌동)", "lat": 37.4954583, "lng": 126.6808091}, {"n": "나이스카페인클럽 마곡중앙점(강서)", "a": "서울 강서구 마곡동로3길 26 1층 110호", "lat": 37.5601974, "lng": 126.8305202}, {"n": "호반베르디움센트럴파크(시흥_아싸)", "a": "경기 시흥시 배곧3로 27-8 경로당건물 지상에서 엘베타고 지하1층 카페쉼", "lat": 37.3745726, "lng": 126.7268785}, {"n": "요고당(구로)", "a": "서울 구로구 구로중앙로22길 80 1층 101호(구로동, 대신빌딩)", "lat": 37.4991993, "lng": 126.8886856}, {"n": "금천제일큰약국(금천)", "a": "서울 금천구 두산로 75 1층(독산동, 홍은빌딩)", "lat": 37.4703236, "lng": 126.8965962}, {"n": "더티프라이 송도트리플점(인천)", "a": "인천 연수구 송도과학로16번길 33-3 C-1F-116호(송도동, 송도 트리플스트리트)", "lat": 37.3797884, "lng": 126.6609571}, {"n": "5to7_오투칠(금천)", "a": "서울특별시 금천구 디지털로 178, M-111호(가산동) 없음", "lat": 37.4766286, "lng": 126.8871293}, {"n": "나이스카페인클럽 가산하이엔드9차점(금천)", "a": "서울 금천구 가산디지털1로 233 1층 108호", "lat": 37.4858136, "lng": 126.8783684}, {"n": "나이스카페인클럽 마곡점(강서)", "a": "서울 강서구 공항대로 213 1층 109호", "lat": 37.5596993, "lng": 126.8313656}, {"n": "나이스카페인클럽 영등포구청점(영등포)", "a": "서울 영등포구 당산로 124 1층 102호", "lat": 37.5257295, "lng": 126.8969142}, {"n": "나이스카페인클럽 여의도한강공원점(영등포)", "a": "서울 영등포구 여의도동 10-3 107", "lat": 37.530195, "lng": 126.9252287}, {"n": "나이스카페인클럽 가산에이스타워점(금천)", "a": "서울 금천구 디지털로 121 지상1층 109호", "lat": 37.4761399, "lng": 126.8800987}, {"n": "대충유원지(마포)", "a": "서울특별시 마포구 월드컵북로6길 37 (연남동) 없음", "lat": 37.558762, "lng": 126.9203635}, {"n": "팻어케이크(마포)", "a": "서울 마포구 연희로1길 45 2층(연남동)", "lat": 37.5610355, "lng": 126.9259443}, {"n": "모닝캄커피랩 연남점(마포)", "a": "서울특별시 마포구 성미산로 192 (연남동) 1층", "lat": 37.5628142, "lng": 126.9263112}, {"n": "나이스카페인클럽 안양범계점(안양)", "a": "경기 안양시 동안구 평촌대로243번길 30 A224~225외 지상1층", "lat": 37.3928424, "lng": 126.9530417}];
+
+const map=new naver.maps.Map('map',{
+  center:new naver.maps.LatLng(37.5,126.97),
+  zoom:11,
+  mapTypeId:naver.maps.MapTypeId.NORMAL
+});
+let ow=null;
+
+const groups={};
+stores.forEach(s=>{
+  if(!s.lat||!s.lng)return;
+  const key=s.lat.toFixed(4)+','+s.lng.toFixed(4);
+  if(!groups[key])groups[key]=[];
+  groups[key].push(s);
+});
+
+const bounds=new naver.maps.LatLngBounds();
+
+Object.values(groups).forEach(grp=>{
+  const s0=grp[0];
+  const cnt=grp.length;
+  bounds.extend(new naver.maps.LatLng(s0.lat,s0.lng));
+
+  const markerHtml=cnt>1
+    ?`<div style="width:32px;height:32px;background:${COLOR};border:2.5px solid #fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.28);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;transition:transform .15s" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">${cnt}</div>`
+    :`<div style="width:22px;height:22px;background:${COLOR};border:2.5px solid #fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.28);cursor:pointer;transition:transform .15s" onmouseover="this.style.transform='scale(1.25)'" onmouseout="this.style.transform='scale(1)'"></div>`;
+
+  const mk=new naver.maps.Marker({
+    position:new naver.maps.LatLng(s0.lat,s0.lng),
+    map,
+    icon:{content:markerHtml,anchor:new naver.maps.Point(cnt>1?16:11,cnt>1?16:11)}
+  });
+
+  let iwContent='';
+  if(cnt===1){
+    iwContent=`<div class="iw"><div class="iw-course">${LABEL}</div><div class="iw-name">${s0.n}</div><div class="iw-addr">${s0.a}</div><div class="iw-tail"></div></div>`;
+  }else{
+    const items=grp.map(s=>`<div class="iw-item">${s.n}</div>`).join('');
+    iwContent=`<div class="iw"><div class="iw-course">${LABEL}</div><div class="iw-addr" style="margin-bottom:6px">${s0.a}</div><div class="iw-group-badge">총 ${cnt}개 거래처</div><div style="margin-top:4px">${items}</div><div class="iw-tail"></div></div>`;
+  }
+
+  const iw=new naver.maps.InfoWindow({content:iwContent,borderWidth:0,disableAnchor:true,backgroundColor:'transparent',pixelOffset:new naver.maps.Point(0,-12)});
+  naver.maps.Event.addListener(mk,'click',()=>{
+    if(ow)ow.close();
+    if(ow===iw){ow=null;return}
+    iw.open(map,mk);ow=iw;
+  });
+});
+
+if(!bounds.isEmpty()){
+  map.fitBounds(bounds,{top:60,right:40,bottom:40,left:40});
+}
+map.addListener('click',()=>{if(ow){ow.close();ow=null}});
+</script>
+</body>
+</html>
